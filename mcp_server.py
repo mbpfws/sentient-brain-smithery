@@ -737,11 +737,14 @@ if __name__ == "__main__":
     logger.info(f"Health check available at http://0.0.0.0:{port}/health")
     logger.info(f"MCP endpoint available at http://0.0.0.0:{port}/mcp")
     
+    # Configure for Docker/Smithery deployment
     uvicorn.run(
         "mcp_server:app",
         host="0.0.0.0",
         port=port,
         reload=False,
         log_level="info",
-        access_log=True
+        access_log=False,  # Reduce logging for deployment
+        timeout_keep_alive=30,  # Keep connections alive longer
+        timeout_graceful_shutdown=10  # Faster shutdown for container environments
     )
