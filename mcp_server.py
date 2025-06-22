@@ -40,6 +40,7 @@ class Config(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"  # Allow extra fields to prevent validation errors during tool scanning
 
 class MCPRequest(BaseModel):
     """MCP Protocol Request"""
@@ -370,18 +371,23 @@ config = None
 mcp_server = None
 
 def parse_smithery_config(request: Request) -> Config:
-    """Parse Smithery configuration from query parameters"""
-    query_params = dict(request.query_params)
-    
-    # Convert dot notation to environment variables
-    env_vars = {}
-    for key, value in query_params.items():
-        # Convert dot notation like 'server.apiKey' to 'SERVER_API_KEY'
-        env_key = key.replace('.', '_').upper()
-        env_vars[env_key] = value
-    
-    # Create config with query params as environment
-    return Config(**env_vars)
+    """Parse Smithery configuration from query parameters - safe for tool scanning"""
+    try:
+        query_params = dict(request.query_params)
+        
+        # Convert dot notation to environment variables
+        env_vars = {}
+        for key, value in query_params.items():
+            # Convert dot notation like 'server.apiKey' to 'SERVER_API_KEY'
+            env_key = key.replace('.', '_').upper()
+            env_vars[env_key] = value
+        
+        # Create config with query params as environment
+        return Config(**env_vars)
+    except Exception as e:
+        logger.warning(f"Configuration parsing failed (using defaults): {e}")
+        # Return default config during tool scanning - allows lazy loading
+        return Config()
 
 @app.get("/")
 async def root():
@@ -428,11 +434,8 @@ async def mcp_get(request: Request):
 
 @app.post("/mcp")
 async def mcp_post(request: Request, mcp_request: MCPRequest):
-    """Handle MCP POST requests"""
+    """Handle MCP POST requests - implements lazy loading for tool discovery"""
     try:
-        config = parse_smithery_config(request)
-        server = SentientBrainMCP(config)
-        
         method = mcp_request.method
         # Ensure ID is always a string - handle 0, null, and other values
         if mcp_request.id is not None:
@@ -440,31 +443,47 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
         else:
             request_id = "1"
         
-        if method == "initialize":
-            result = {
-                "protocolVersion": "2025-06-18",
-                "capabilities": {
-                    "tools": {"listChanged": True},
-                    "resources": {},
-                    "prompts": {}
-                },
-                "serverInfo": {
-                    "name": "sentient-brain-mcp",
-                    "version": "1.0.0"
+        # Methods that don't require valid configuration (lazy loading)
+        if method in ["initialize", "tools/list", "resources/list", "prompts/list"]:
+            if method == "initialize":
+                result = {
+                    "protocolVersion": "2025-06-18",
+                    "capabilities": {
+                        "tools": {"listChanged": True},
+                        "resources": {},
+                        "prompts": {}
+                    },
+                    "serverInfo": {
+                        "name": "sentient-brain-mcp",
+                        "version": "1.0.0"
+                    }
                 }
-            }
-            
-        elif method == "tools/list":
-            # Use static tool definitions for lazy loading
-            tools = SentientBrainMCP.get_tool_definitions()
-            result = {"tools": tools}
-            
+                
+            elif method == "tools/list":
+                # Use static tool definitions for lazy loading - no config needed
+                tools = SentientBrainMCP.get_tool_definitions()
+                result = {"tools": tools}
+                
+            elif method == "resources/list":
+                result = {"resources": []}
+                
+            elif method == "prompts/list":
+                result = {"prompts": []}
+                
+        # Methods that require valid configuration (actual tool execution)
         elif method == "tools/call":
-            # Only initialize when actually calling tools
+            # Only now do we parse and validate configuration
+            config = parse_smithery_config(request)
+            server = SentientBrainMCP(config)
             server.initialize()
+            
             params = mcp_request.params or {}
             tool_name = params.get("name", "")
             arguments = params.get("arguments", {})
+            
+            # Validate configuration for actual tool execution
+            if tool_name.startswith("sentient-brain/") and not config.groq_api_key:
+                raise ValueError("GROQ_API_KEY is required for tool execution")
             
             tool_result = await server.handle_tool_call(tool_name, arguments)
             result = {
@@ -476,12 +495,6 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
                 ],
                 "isError": tool_result.get("success", True) == False
             }
-            
-        elif method == "resources/list":
-            result = {"resources": []}
-            
-        elif method == "prompts/list":
-            result = {"prompts": []}
             
         else:
             return JSONResponse(
