@@ -429,7 +429,7 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
             request_id = "1"
         
         # Methods that don't require valid configuration (lazy loading)
-        if method in ["initialize", "tools/list", "resources/list", "prompts/list", "notifications/initialized"]:
+        if method in ["initialize", "tools/list", "resources/list", "prompts/list", "notifications/initialized", "ping"]:
             if method == "initialize":
                 result = {
                     "protocolVersion": "2025-03-26",
@@ -448,6 +448,14 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
                 # Handle client initialization notification
                 logger.info("Client initialized successfully")
                 result = {}  # Notifications don't return results
+                
+            elif method == "ping":
+                # Handle ping requests for server health/connectivity
+                result = {
+                    "status": "pong",
+                    "timestamp": datetime.now().isoformat(),
+                    "server": "sentient-brain-mcp"
+                }
                 
             elif method == "tools/list":
                 # Use static tool definitions for lazy loading - no config needed
@@ -496,7 +504,7 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
                     "id": str(request_id),
                     "error": {
                         "code": -32601,
-                        "message": f"Method not found: {method}. Available methods: initialize, tools/list, tools/call, resources/list, prompts/list, notifications/initialized"
+                        "message": f"Method not found: {method}. Available methods: initialize, tools/list, tools/call, resources/list, prompts/list, notifications/initialized, ping"
                     }
                 }
             )
