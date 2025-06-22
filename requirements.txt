@@ -1,33 +1,29 @@
 # Core MCP and Agent Framework
 mcp>=1.0.0
 pydantic>=2.10.0
-fastapi>=0.115.13
+fastapi>=0.115.0
 uvicorn>=0.30.0
 
-# AI/ML Libraries (2025 Latest)
+# AI/ML Libraries (2025 Latest - Stable versions)
 groq>=0.28.0
 google-genai>=1.21.0
 langchain>=0.3.0
 langgraph>=0.2.0
 
 # Database and Storage
-surrealdb>=1.0.4
+surrealdb>=1.0.0
 redis>=5.0.0
 
 # Utilities
 python-dotenv>=1.0.0
 httpx>=0.27.0
-asyncio-mqtt>=0.16.0
 pydantic-settings>=2.6.0
 loguru>=0.7.0
 
-# Development and Testing
+# Development and Testing (optional for deployment)
 pytest>=8.0.0
 pytest-asyncio>=0.24.0
-black>=24.0.0
-isort>=5.13.0
 
-# Optional Enhancements
-streamlit>=1.40.0
-plotly>=5.24.0
-networkx>=3.4.0
+# Performance and Monitoring
+async-timeout>=4.0.0
+aiofiles>=24.0.0
