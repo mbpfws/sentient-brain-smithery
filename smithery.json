@@ -38,12 +38,6 @@
         "required": false,
         "type": "secret",
         "userInput": true
-      },
-      {
-        "name": "LOG_LEVEL",
-        "description": "Application logging level (DEBUG, INFO, WARNING, ERROR)",
-        "required": false,
-        "default": "INFO"
       }
     ],
     "ports": [

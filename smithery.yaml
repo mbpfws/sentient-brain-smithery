@@ -20,7 +20,7 @@ platforms:
   - vscode-insiders
   - raycast
 
-# Required environment variables - Users will input these when connecting
+# Required environment variables - Only essential API keys visible to users
 env:
   - name: GROQ_API_KEY
     description: "Your Groq API key for LLM inference (get from console.groq.com)"
@@ -29,10 +29,6 @@ env:
   - name: GOOGLE_API_KEY
     description: "Your Google GenAI API key for enhanced capabilities (get from makersuite.google.com)"
     type: secret
-    required: false
-  - name: LOG_LEVEL
-    description: "Application logging level"
-    default: "INFO"
     required: false
 
 # Service configuration
