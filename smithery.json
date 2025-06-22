@@ -1,0 +1,138 @@
+{
+  "id": "sentient-brain/multi-agent-system",
+  "name": "Sentient Brain Multi-Agent System",
+  "description": "Advanced AI Code Developer system leveraging multi-agent architecture with SurrealDB unified data layer. Provides intelligent code development assistance from concept to deployment with Ultra Orchestrator, Architect Agent, Knowledge Memory, Debug/Refactor capabilities, and Document Management.",
+  "version": "1.0.0",
+  "author": "Sentient Brain Team",
+  "license": "MIT",
+  "tags": [
+    "multi-agent",
+    "ai-code-developer", 
+    "surrealdb",
+    "groq",
+    "langraph",
+    "orchestrator",
+    "architect",
+    "code-analysis",
+    "debugging",
+    "documentation",
+    "workflow-automation",
+    "knowledge-graph",
+    "semantic-search",
+    "failure-prevention"
+  ],
+  "category": "development",
+  "deployment": {
+    "localOnly": false,
+    "requirements": [
+      {
+        "name": "GROQ_API_KEY",
+        "description": "Groq API key for high-performance LLM inference",
+        "required": true,
+        "type": "secret"
+      },
+      {
+        "name": "SURREAL_URL", 
+        "description": "SurrealDB connection URL (ws://localhost:8000/rpc for local)",
+        "required": true,
+        "default": "ws://localhost:8000/rpc"
+      },
+      {
+        "name": "SURREAL_USER",
+        "description": "SurrealDB username",
+        "required": true,
+        "default": "root"
+      },
+      {
+        "name": "SURREAL_PASS",
+        "description": "SurrealDB password", 
+        "required": true,
+        "default": "root",
+        "type": "secret"
+      },
+      {
+        "name": "GOOGLE_API_KEY",
+        "description": "Google GenAI API key for enhanced capabilities (optional)",
+        "required": false,
+        "type": "secret"
+      }
+    ],
+    "ports": [
+      {
+        "port": 8000,
+        "protocol": "http",
+        "description": "Main MCP endpoint"
+      }
+    ]
+  },
+  "capabilities": [
+    "Intent disambiguation and workflow orchestration",
+    "Project context analysis and planning", 
+    "Code analysis and understanding",
+    "Architecture design and recommendations",
+    "Debug assistance and refactoring",
+    "Documentation generation and management",
+    "Knowledge graph-based semantic search",
+    "Multi-agent coordination and collaboration",
+    "Failure prevention and recovery mechanisms"
+  ],
+  "examples": [
+    {
+      "name": "Process Development Query",
+      "description": "Analyze user intent and coordinate appropriate agents",
+      "endpoint": "/mcp",
+      "method": "POST",
+      "input": {
+        "query": "I want to build a REST API for user authentication",
+        "context": {
+          "project_type": "web_api",
+          "tech_stack": ["python", "fastapi"]
+        }
+      }
+    },
+    {
+      "name": "Create Project Context",
+      "description": "Initialize a new project with intelligent analysis",
+      "endpoint": "/mcp",
+      "method": "POST",
+      "input": {
+        "tool": "sentient-brain/create-project",
+        "arguments": {
+          "name": "auth-api",
+          "description": "User authentication REST API",
+          "languages": ["python"],
+          "frameworks": ["fastapi"]
+        }
+      }
+    },
+    {
+      "name": "Search Knowledge Graph",
+      "description": "Semantic search across code, docs, and project knowledge",
+      "endpoint": "/mcp",
+      "method": "POST",
+      "input": {
+        "tool": "sentient-brain/search-knowledge",
+        "arguments": {
+          "query": "authentication middleware implementation",
+          "node_type": "code_chunk",
+          "limit": 10
+        }
+      }
+    }
+  ],
+  "documentation": {
+    "readme": "README.md",
+    "guides": [
+      "DEPLOYMENT.md"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sentient-brain/smithery-deployment"
+  },
+  "support": {
+    "email": "support@sentient-brain.ai",
+    "docs": "https://docs.sentient-brain.ai",
+    "issues": "https://github.com/sentient-brain/smithery-deployment/issues"
+  }
+}
