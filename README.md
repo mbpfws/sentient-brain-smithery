@@ -190,3 +190,133 @@ MIT License - see LICENSE file for details.
 ---
 
 **Ready for Smithery.ai deployment!** 🚀
+
+---
+
+## 🇻🇳 Tài liệu Tiếng Việt
+
+### 🧠 Công cụ Cốt lõi
+
+1. **sentient-brain/orchestrate**
+   - Điều phối chính và quản lý luồng công việc
+   - Phân tích ý định người dùng và chuyển tiếp đến các agent phù hợp
+
+2. **sentient-brain/architect**
+   - Thiết kế dự án và lập kế hoạch kiến trúc
+   - Đề xuất lựa chọn công nghệ
+
+3. **sentient-brain/analyze-code**
+   - Phân tích mã nguồn sâu và hiểu mã
+   - Phân tích cấu trúc, chất lượng và phụ thuộc
+
+4. **sentient-brain/search-knowledge**
+   - Tìm kiếm ngữ nghĩa trên đồ thị tri thức dự án
+   - Tìm kiếm đa phương tiện (mã nguồn, tài liệu, khái niệm)
+
+5. **sentient-brain/debug-assist**
+   - Gỡ lỗi thông minh và nâng cao chất lượng mã
+   - Gợi ý sửa lỗi và refactor
+
+## 🔧 Ví dụ Sử Dụng
+
+### Điều phối cơ bản
+```json
+{
+  "tool": "sentient-brain/orchestrate",
+  "arguments": {
+    "query": "Tôi muốn xây dựng REST API cho xác thực người dùng",
+    "context": {
+      "project_type": "web_api",
+      "tech_stack": ["python", "fastapi"]
+    }
+  }
+}
+```
+
+### Thiết kế Kiến trúc Dự án
+```json
+{
+  "tool": "sentient-brain/architect",
+  "arguments": {
+    "project_type": "web_api",
+    "requirements": "Xác thực người dùng bằng JWT",
+    "tech_stack": ["python", "fastapi", "postgresql"]
+  }
+}
+```
+
+### Tìm kiếm Tri thức
+```json
+{
+  "tool": "sentient-brain/search-knowledge",
+  "arguments": {
+    "query": "triển khai middleware xác thực",
+    "node_type": "code_chunk",
+    "limit": 10
+  }
+}
+```
+
+## 🔍 Kiểm tra Sức khỏe
+
+Máy chủ cung cấp các endpoint kiểm tra sức khỏe:
+- `GET /` - Kiểm tra trạng thái cơ bản
+- `GET /mcp` - Thông tin giao thức MCP và danh sách công cụ khả dụng
+
+## 🐛 Gỡ Lỗi
+
+### Các Vấn Đề Thường Gặp
+
+1. **Kết nối đến CSDL**
+   - Kiểm tra lại thông tin kết nối SurrealDB
+   - Xác nhận kết nối mạng
+
+2. **Vấn đề API Key**
+   - Đảm bảo API key Groq hợp lệ và còn hạn mức sử dụng
+   - Kiểm tra định dạng và quyền truy cập của API key
+
+3. **Vấn đề Cấu hình**
+   - Kiểm tra lại các tham số cấu hình Smithery
+   - Đảm bảo ánh xạ biến môi trường chính xác
+
+### Ghi log
+Máy chủ sử dụng logging có cấu trúc với các mức độ cấu hình:
+- `DEBUG`: Thông tin gỡ lỗi chi tiết
+- `INFO`: Thông báo hoạt động chung
+- `WARNING`: Cảnh báo
+- `ERROR`: Lỗi nghiêm trọng
+
+## 📈 Hiệu Năng
+
+- **Docker tối ưu**: Multi-stage build giúp giảm kích thước image
+- **Hoạt động bất đồng bộ**: Hỗ trợ async/await cho hiệu suất cao
+- **Bộ nhớ đệm**: Cache thông minh cho dữ liệu truy cập thường xuyên
+- **Kết nối pooling**: Quản lý kết nối CSDL hiệu quả
+
+## 🔒 Bảo Mật
+
+- **Chạy không quyền root**: Container chạy bằng user không đặc quyền
+- **Kiểm tra đầu vào**: Sử dụng Pydantic để kiểm tra dữ liệu vào
+- **Giới hạn tốc độ**: Tích hợp rate limiting cho các endpoint
+- **Cấu hình an toàn mặc định**: Ưu tiên bảo mật từ đầu
+
+## 📚 Tài liệu
+
+- [Tài liệu Smithery.ai](https://smithery.ai/docs)
+- [Đặc tả giao thức MCP](https://spec.modelcontextprotocol.io/)
+- [Tài liệu SurrealDB](https://surrealdb.com/docs)
+- [Tài liệu Groq API](https://console.groq.com/docs)
+
+## 🤝 Hỗ trợ
+
+- **Báo lỗi/Góp ý**: [GitHub Issues](https://github.com/sentient-brain/smithery-deployment/issues)
+- **Tài liệu**: [docs.sentient-brain.ai](https://docs.sentient-brain.ai)
+- **Email**: support@sentient-brain.ai
+
+## 📄 Giấy phép
+
+MIT License - xem file LICENSE để biết chi tiết.
+
+---
+
+**Sẵn sàng triển khai trên Smithery.ai!** 🚀
