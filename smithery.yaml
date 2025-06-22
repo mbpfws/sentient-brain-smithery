@@ -1,13 +1,37 @@
 # Smithery.ai Deployment Configuration for Sentient Brain MCP Server
+# Updated with comprehensive platform support and configuration options
 
-# Metadata for the Smithery UI
+# Basic server metadata
 name: "Sentient Brain MCP"
-description: "A multi-agent framework for advanced code generation, analysis, and orchestration."
+description: "A multi-agent framework for advanced code generation, analysis, and orchestration with SurrealDB backend"
+version: "1.0.0"
 
-# Defines the container build process
+# Deployment configuration
+runtime: "container"
 build:
-  # Use a Dockerfile for building the application
-  type: dockerfile
+  dockerfile: "Dockerfile"
+  dockerBuildPath: "."
+
+# Platform compatibility - All supported Smithery clients
+platforms:
+  - claude-desktop
+  - cursor
+  - windsurf
+  - vscode
+  - vscode-insiders
+  - raycast
+  - tome
+  - highlight
+  - asari
+  - cline
+  - roo-code
+  - augment
+  - boltai
+  - goose
+  - witsy
+  - enconvo
+  - amazon-bedrock
+  - amazon-q
 
 # Environment variables required for the application
 # 'secret' type will render as a password input in the Smithery UI
@@ -54,3 +78,274 @@ healthCheck:
   path: "/health"
   # Port to use for the health check
   port: 8000
+
+start:
+  command: ["python", "mcp_server.py"]
+  port: 8000
+
+runtime: "container"
+
+startCommand:
+  type: "http"
+  
+# Comprehensive configuration schema for all platforms
+configSchema:
+  type: "object"
+  properties:
+    # Core API Keys (Required)
+    GROQ_API_KEY:
+      type: "string"
+      description: "Groq API key for high-performance LLM inference (llama-3.1-70b-versatile, llama-3.1-8b-instant)"
+      required: true
+      sensitive: true
+    
+    # Database Configuration
+    SURREAL_URL:
+      type: "string"
+      description: "SurrealDB WebSocket connection URL (ws://localhost:8000/rpc or wss://your-db.fly.dev/rpc)"
+      default: "ws://localhost:8000/rpc"
+      examples: ["ws://localhost:8000/rpc", "wss://your-db.fly.dev/rpc"]
+    
+    SURREAL_USER:
+      type: "string"
+      description: "SurrealDB username for authentication"
+      default: "root"
+      sensitive: true
+    
+    SURREAL_PASS:
+      type: "string"
+      description: "SurrealDB password for authentication"
+      default: "root"
+      sensitive: true
+    
+    SURREAL_NAMESPACE:
+      type: "string"
+      description: "SurrealDB namespace for data isolation"
+      default: "sentient_brain"
+    
+    SURREAL_DATABASE:
+      type: "string"
+      description: "SurrealDB database name within namespace"
+      default: "multi_agent"
+    
+    # Optional AI Services
+    GOOGLE_API_KEY:
+      type: "string"
+      description: "Google GenAI API key for embeddings and advanced reasoning (optional)"
+      sensitive: true
+    
+    OPENAI_API_KEY:
+      type: "string"
+      description: "OpenAI API key for additional model support (optional)"
+      sensitive: true
+    
+    ANTHROPIC_API_KEY:
+      type: "string"
+      description: "Anthropic API key for Claude models (optional)"
+      sensitive: true
+    
+    # Model Configuration
+    GROQ_MODEL:
+      type: "string"
+      description: "Primary Groq model for agent operations"
+      default: "llama-3.1-70b-versatile"
+      enum: 
+        - "llama-3.1-70b-versatile"
+        - "llama-3.1-8b-instant"
+        - "llama-3.2-90b-text-preview"
+        - "mixtral-8x7b-32768"
+    
+    GOOGLE_MODEL:
+      type: "string"
+      description: "Google model for embeddings and reasoning"
+      default: "gemini-2.0-flash-001"
+      enum:
+        - "gemini-2.0-flash-001"
+        - "gemini-1.5-pro"
+        - "gemini-1.5-flash"
+    
+    EMBEDDING_MODEL:
+      type: "string"
+      description: "Model for generating embeddings"
+      default: "text-embedding-004"
+      enum:
+        - "text-embedding-004"
+        - "gemini-embedding-exp-03-07"
+    
+    # Agent Configuration
+    MAX_AGENTS:
+      type: "integer"
+      description: "Maximum number of concurrent agents"
+      default: 5
+      minimum: 1
+      maximum: 20
+    
+    AGENT_TIMEOUT:
+      type: "integer"
+      description: "Agent execution timeout in seconds"
+      default: 300
+      minimum: 30
+      maximum: 1800
+    
+    # Memory and Performance
+    MEMORY_LIMIT_MB:
+      type: "integer"
+      description: "Memory limit for agent operations (MB)"
+      default: 1024
+      minimum: 512
+      maximum: 4096
+    
+    VECTOR_DIMENSIONS:
+      type: "integer"
+      description: "Vector embedding dimensions"
+      default: 1536
+      enum: [384, 768, 1024, 1536, 3072]
+    
+    # Logging and Monitoring
+    LOG_LEVEL:
+      type: "string"
+      description: "Application logging level"
+      default: "INFO"
+      enum: ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+    
+    ENABLE_METRICS:
+      type: "boolean"
+      description: "Enable performance metrics collection"
+      default: true
+    
+    ENABLE_TRACING:
+      type: "boolean"
+      description: "Enable distributed tracing"
+      default: false
+    
+    # Security Configuration
+    ENABLE_CORS:
+      type: "boolean"
+      description: "Enable CORS for web clients"
+      default: true
+    
+    ALLOWED_ORIGINS:
+      type: "string"
+      description: "Comma-separated list of allowed CORS origins"
+      default: "*"
+    
+    API_RATE_LIMIT:
+      type: "integer"
+      description: "API requests per minute per client"
+      default: 100
+      minimum: 10
+      maximum: 1000
+    
+    # Development and Debug
+    DEBUG_MODE:
+      type: "boolean"
+      description: "Enable debug mode with verbose logging"
+      default: false
+    
+    ENABLE_PLAYGROUND:
+      type: "boolean"
+      description: "Enable interactive MCP playground"
+      default: true
+    
+    # Platform-specific configurations
+    CURSOR_INTEGRATION:
+      type: "boolean"
+      description: "Enable Cursor IDE specific features"
+      default: true
+    
+    WINDSURF_INTEGRATION:
+      type: "boolean"
+      description: "Enable Windsurf IDE specific features"
+      default: true
+    
+    CLAUDE_DESKTOP_INTEGRATION:
+      type: "boolean"
+      description: "Enable Claude Desktop specific features"
+      default: true
+
+  required: ["GROQ_API_KEY"]
+# Example configurations for different use cases
+exampleConfigs:
+  # Basic configuration
+  basic:
+    GROQ_API_KEY: "gsk_example123"
+    SURREAL_URL: "ws://localhost:8000/rpc"
+    SURREAL_USER: "root"
+    SURREAL_PASS: "root"
+    LOG_LEVEL: "INFO"
+  
+  # Production configuration
+  production:
+    GROQ_API_KEY: "gsk_prod_key_here"
+    GOOGLE_API_KEY: "AIzaSy_prod_key_here"
+    SURREAL_URL: "wss://your-prod-db.fly.dev/rpc"
+    SURREAL_USER: "admin"
+    SURREAL_PASS: "secure_password"
+    GROQ_MODEL: "llama-3.1-70b-versatile"
+    MAX_AGENTS: 10
+    MEMORY_LIMIT_MB: 2048
+    LOG_LEVEL: "WARNING"
+    ENABLE_METRICS: true
+    API_RATE_LIMIT: 200
+  
+  # Development configuration
+  development:
+    GROQ_API_KEY: "gsk_dev_key_here"
+    GOOGLE_API_KEY: "AIzaSy_dev_key_here"
+    SURREAL_URL: "ws://localhost:8000/rpc"
+    DEBUG_MODE: true
+    LOG_LEVEL: "DEBUG"
+    ENABLE_PLAYGROUND: true
+    MAX_AGENTS: 3
+    MEMORY_LIMIT_MB: 512
+
+# Platform-specific installation instructions
+installation:
+  claude-desktop:
+    description: "Add to Claude Desktop configuration"
+    config_file: "~/Library/Application Support/Claude/claude_desktop_config.json"
+    
+  cursor:
+    description: "Configure in Cursor IDE settings"
+    config_path: ".cursor/mcp_servers.json"
+    
+  windsurf:
+    description: "Add to Windsurf MCP configuration"
+    config_path: ".windsurf/mcp.json"
+    
+  vscode:
+    description: "Install via VS Code MCP extension"
+    extension: "smithery.mcp-client"
+
+# Tool categories this server provides
+categories:
+  - "Code Generation"
+  - "Multi-Agent Systems"
+  - "Database Integration"
+  - "Memory Management"
+  - "AI Orchestration"
+  - "Development Tools"
+
+# Keywords for discoverability
+keywords:
+  - "multi-agent"
+  - "surrealdb"
+  - "code-generation"
+  - "ai-orchestration"
+  - "memory-layers"
+  - "groq"
+  - "gemini"
+  - "workflow-automation"
+
+# License and documentation
+license: "MIT"
+homepage: "https://github.com/your-username/sentient-brain"
+documentation: "https://github.com/your-username/sentient-brain/blob/main/README.md"
+
+# Deployment tags
+tags:
+  - "production-ready"
+  - "enterprise"
+  - "multi-model"
+  - "graph-database"
+  - "vector-search"

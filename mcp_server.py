@@ -418,61 +418,91 @@ async def mcp_get(request: Request):
 
 @app.post("/mcp")
 async def mcp_post(request: Request, mcp_request: MCPRequest):
-    """Handle MCP POST requests - execute tools"""
-    global config, mcp_server
-
-    # For "tools/list", return the static definitions immediately without full server init
-    if mcp_request.method == "tools/list":
-        return MCPResponse(
-            id=mcp_request.id,
-            result={"tools": SentientBrainMCP.get_tool_definitions()}
-        )
-
-    # For all other methods, ensure the full server is initialized
-    if not mcp_server:
-        logger.info("First tool call request, creating SentientBrainMCP instance...")
-        config = parse_smithery_config(request)
-        mcp_server = SentientBrainMCP(config)
-    
-    # Only initialize fully when actually executing a tool, not during scanning
-    if mcp_request.method == "tools/call":
-        logger.info("Tool execution requested, ensuring full initialization...")
-        mcp_server.initialize()
-    
+    """Handle MCP POST requests"""
     try:
-        if mcp_request.method == "tools/call":
+        config = parse_smithery_config(request)
+        server = SentientBrainMCP(config)
+        
+        method = mcp_request.method
+        request_id = mcp_request.id or "1"  # Ensure ID is always a string
+        
+        if method == "initialize":
+            result = {
+                "protocolVersion": "2025-06-18",
+                "capabilities": {
+                    "tools": {"listChanged": True},
+                    "resources": {},
+                    "prompts": {}
+                },
+                "serverInfo": {
+                    "name": "sentient-brain-mcp",
+                    "version": "1.0.0"
+                }
+            }
+            
+        elif method == "tools/list":
+            # Use static tool definitions for lazy loading
+            tools = SentientBrainMCP.get_tool_definitions()
+            result = {"tools": tools}
+            
+        elif method == "tools/call":
+            # Only initialize when actually calling tools
+            server.initialize()
             params = mcp_request.params or {}
-            tool_name = params.get("name")
+            tool_name = params.get("name", "")
             arguments = params.get("arguments", {})
             
-            if not tool_name:
-                raise HTTPException(status_code=400, detail="Tool name is required")
+            tool_result = await server.handle_tool_call(tool_name, arguments)
+            result = {
+                "content": [
+                    {
+                        "type": "text",
+                        "text": json.dumps(tool_result, indent=2)
+                    }
+                ],
+                "isError": tool_result.get("success", True) == False
+            }
             
-            result = await mcp_server.handle_tool_call(tool_name, arguments)
+        elif method == "resources/list":
+            result = {"resources": []}
             
-            return MCPResponse(
-                id=mcp_request.id,
-                result={
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": json.dumps(result, indent=2)
-                        }
-                    ]
+        elif method == "prompts/list":
+            result = {"prompts": []}
+            
+        else:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "jsonrpc": "2.0",
+                    "id": str(request_id),
+                    "error": {
+                        "code": -32601,
+                        "message": f"Method not found: {method}"
+                    }
                 }
             )
         
-        else:
-            return MCPResponse(
-                id=mcp_request.id,
-                error={"code": -32601, "message": f"Method not found: {mcp_request.method}"}
-            )
-            
+        response = {
+            "jsonrpc": "2.0",
+            "id": str(request_id),  # Ensure ID is string
+            "result": result
+        }
+        
+        logger.info(f"MCP {method} request processed successfully")
+        return JSONResponse(content=response)
+        
     except Exception as e:
         logger.error(f"MCP request error: {e}")
-        return MCPResponse(
-            id=mcp_request.id,
-            error={"code": -32603, "message": f"Internal error: {str(e)}"}
+        return JSONResponse(
+            status_code=500,
+            content={
+                "jsonrpc": "2.0",
+                "id": str(mcp_request.id) if mcp_request.id else "error",
+                "error": {
+                    "code": -32603,
+                    "message": str(e)
+                }
+            }
         )
 
 @app.delete("/mcp")
