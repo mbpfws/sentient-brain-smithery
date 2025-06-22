@@ -24,6 +24,35 @@ import uvicorn
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------
+# Static input schemas for tools (used in lazy tool listing)
+# ---------------------------------------------------------
+class OrchestrateInput(BaseModel):
+    query: str = Field(..., description="User query or task description")
+    context: Optional[Dict[str, Any]] = Field(default=None, description="Additional context")
+    priority: str = Field(default="medium", description="Task priority", pattern="^(low|medium|high)$")
+
+class ArchitectInput(BaseModel):
+    project_type: str = Field(..., description="Type of project to architect")
+    requirements: str = Field(..., description="Project requirements")
+    tech_stack: Optional[List[str]] = Field(default_factory=list, description="Proposed tech stack")
+
+class AnalyzeCodeInput(BaseModel):
+    code: str = Field(..., description="Code to analyze")
+    language: Optional[str] = Field(default=None, description="Programming language of the code")
+    analysis_type: str = Field(default="structure", description="Type of analysis", pattern="^(structure|quality|dependencies)$")
+
+class SearchKnowledgeInput(BaseModel):
+    query: str = Field(..., description="Search query")
+    node_type: Optional[str] = Field(default="code_chunk", description="Type of node to search for", pattern="^(code_chunk|task|document|concept)$")
+    limit: int = Field(default=10, description="Maximum number of results to return")
+
+class DebugAssistInput(BaseModel):
+    code: str = Field(..., description="Code containing issues")
+    error_message: Optional[str] = Field(default=None, description="Associated error message, if any")
+    debug_type: str = Field(default="fix", description="Type of debugging action", pattern="^(fix|optimize|refactor)$")
+
+
 class Config(BaseSettings):
     """Configuration loaded from environment or Smithery query params"""
     groq_api_key: Optional[str] = Field(default=None, alias="GROQ_API_KEY")
@@ -376,15 +405,15 @@ async def mcp_get(request: Request):
     # Return static tool definitions without requiring authentication
     # This allows Smithery to discover tools before user configuration
     return {
-        "server": {
-            "name": "sentient-brain-multi-agent",
-            "version": "1.0.0"
-        },
-        "tools": SentientBrainMCP.get_tool_definitions(),
-        "capabilities": {
-            "tools": True,
-            "resources": True,
-            "prompts": True
+            "server": {
+                "name": "sentient-brain-multi-agent",
+                "version": "1.0.0"
+            },
+            "tools": SentientBrainMCP.get_tool_definitions(),
+            "capabilities": {
+                "tools": True,
+                "resources": True,
+                "prompts": True
         }
     }
 
@@ -403,7 +432,7 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
         if method in ["initialize", "tools/list", "resources/list", "prompts/list"]:
             if method == "initialize":
                 result = {
-                    "protocolVersion": "2025-06-18",
+                    "protocolVersion": "2025-03-26",
                     "capabilities": {
                         "tools": {"listChanged": True},
                         "resources": {},
@@ -473,7 +502,7 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
         
         logger.info(f"MCP {method} request processed successfully")
         return JSONResponse(content=response)
-        
+            
     except Exception as e:
         logger.error(f"MCP request error: {e}")
         return JSONResponse(

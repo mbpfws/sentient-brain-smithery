@@ -117,8 +117,8 @@ dmypy.json
 
 # Docker
 .dockerignore
-Dockerfile
+# Dockerfile - needed for deployment
 docker-compose.yml
 
-# Smithery
-smithery.yaml
+# Smithery deployment files are needed for deployment
+# smithery.yaml
