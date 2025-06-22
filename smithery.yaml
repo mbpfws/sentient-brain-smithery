@@ -2,7 +2,7 @@
 # Simplified and optimized for reliable deployment with fallback mode
 
 name: "Sentient Brain MCP"
-description: "Multi-agent AI Code Developer system with intelligent fallback mode (works without database)"
+description: "Multi-agent AI Code Developer system with automatic SQLite database (zero configuration required)"
 version: "1.0.0"
 
 # Container deployment configuration
