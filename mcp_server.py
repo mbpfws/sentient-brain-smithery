@@ -218,27 +218,24 @@ class SentientBrainMCP:
         self.db_available = False  # Track if database is working
         logger.info(f"Created SentientBrainMCP instance with SQLite database: {config.database_path}")
 
-    def initialize(self) -> None:
+    async def initialize(self) -> None:
         """Lazily initialize all resources and services"""
         if self._is_initialized:
             return
             
-        # Initialize tools - always available regardless of database
+        # Initialize tools - always available
         self.tools = self.get_tool_definitions()
         
-        # Try to detect if we have database access
-        try:
-            # Simple check - if we can't resolve localhost:8000, we're probably in Smithery
-            import socket
-            socket.create_connection(("localhost", 8000), timeout=1).close()
-            self.fallback_mode = False
-            logger.info("Database connection available - full mode")
-        except:
-            self.fallback_mode = True
-            logger.info("No database detected - running in fallback mode with in-memory storage")
+        # Initialize SQLite database
+        self.db_available = await self.database.initialize()
+        
+        if self.db_available:
+            logger.info("SQLite database initialized successfully")
+        else:
+            logger.warning("SQLite database initialization failed - using basic mode")
             
         self._is_initialized = True
-        logger.info(f"Fully initialized SentientBrainMCP with {len(self.tools)} tools (fallback_mode: {self.fallback_mode})")
+        logger.info(f"Fully initialized SentientBrainMCP with {len(self.tools)} tools (database: {'available' if self.db_available else 'unavailable'})")
     
     @staticmethod
     def get_tool_definitions() -> List[Dict[str, Any]]:
@@ -296,30 +293,22 @@ class SentientBrainMCP:
         context = args.get("context", {})
         priority = args.get("priority", "medium")
         
-        # Store interaction in memory if in fallback mode
-        if self.fallback_mode:
-            interaction_id = f"interaction_{len(self.memory_store)}"
-            self.memory_store[interaction_id] = {
-                "type": "orchestration",
-                "query": query,
-                "context": context,
-                "priority": priority,
-                "timestamp": datetime.now().isoformat()
-            }
-        
         # Simulate orchestration logic
         result = {
             "agent": "UltraOrchestrator",
             "analysis": f"Analyzed query: '{query}' with {priority} priority",
             "workflow": self._determine_workflow(query),
             "next_agents": self._suggest_agents(query),
-            "mode": "fallback" if self.fallback_mode else "full",
-            "storage": "in-memory" if self.fallback_mode else "persistent",
+            "storage": "sqlite" if self.db_available else "basic",
             "success": True,
             "timestamp": datetime.now().isoformat()
         }
         
-        logger.info(f"Orchestrated workflow for query: {query} (fallback_mode: {self.fallback_mode})")
+        # Store interaction in database if available
+        if self.db_available:
+            await self.database.store_interaction("orchestration", "UltraOrchestrator", query, result)
+        
+        logger.info(f"Orchestrated workflow for query: {query} (database: {'available' if self.db_available else 'unavailable'})")
         return result
 
     async def _architect(self, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -327,17 +316,6 @@ class SentientBrainMCP:
         project_type = args.get("project_type", "")
         requirements = args.get("requirements", "")
         tech_stack = args.get("tech_stack", [])
-        
-        # Store interaction in memory if in fallback mode
-        if self.fallback_mode:
-            interaction_id = f"architect_{len(self.memory_store)}"
-            self.memory_store[interaction_id] = {
-                "type": "architecture",
-                "project_type": project_type,
-                "requirements": requirements,
-                "tech_stack": tech_stack,
-                "timestamp": datetime.now().isoformat()
-            }
         
         result = {
             "agent": "ArchitectAgent",
@@ -347,11 +325,14 @@ class SentientBrainMCP:
                 "recommended_stack": tech_stack or self._recommend_stack(project_type),
                 "phases": self._create_project_phases(requirements)
             },
-            "mode": "fallback" if self.fallback_mode else "full",
-            "storage": "in-memory" if self.fallback_mode else "persistent",
+            "storage": "sqlite" if self.db_available else "basic",
             "success": True,
             "timestamp": datetime.now().isoformat()
         }
+        
+        # Store interaction in database if available
+        if self.db_available:
+            await self.database.store_interaction("architecture", "ArchitectAgent", f"{project_type}: {requirements}", result)
         
         return result
 
@@ -360,17 +341,6 @@ class SentientBrainMCP:
         code = args.get("code", "")
         language = args.get("language", "python")
         analysis_type = args.get("analysis_type", "structure")
-        
-        # Store analysis in memory if in fallback mode
-        if self.fallback_mode:
-            analysis_id = f"analysis_{len(self.memory_store)}"
-            self.memory_store[analysis_id] = {
-                "type": "code_analysis",
-                "language": language,
-                "analysis_type": analysis_type,
-                "code_length": len(code),
-                "timestamp": datetime.now().isoformat()
-            }
         
         result = {
             "agent": "CodeAnalysisAgent",
@@ -384,11 +354,14 @@ class SentientBrainMCP:
                 },
                 "insights": self._generate_code_insights(code, analysis_type)
             },
-            "mode": "fallback" if self.fallback_mode else "full",
-            "storage": "in-memory" if self.fallback_mode else "persistent",
+            "storage": "sqlite" if self.db_available else "basic",
             "success": True,
             "timestamp": datetime.now().isoformat()
         }
+        
+        # Store analysis in database if available
+        if self.db_available:
+            await self.database.store_interaction("code_analysis", "CodeAnalysisAgent", f"{language} {analysis_type}", result)
         
         return result
 
@@ -398,63 +371,39 @@ class SentientBrainMCP:
         node_type = args.get("node_type", "code_chunk")
         limit = args.get("limit", 10)
         
-        # In fallback mode, search through memory store
-        if self.fallback_mode:
-            # Search through stored interactions
-            matching_results = []
-            for key, value in self.memory_store.items():
-                if query.lower() in str(value).lower():
-                    matching_results.append({
-                        "id": key,
-                        "type": value.get("type", "memory"),
-                        "content": f"Memory: {value}",
-                        "relevance": 0.8,
-                        "metadata": {"source": "memory_store", "created": value.get("timestamp", "")}
-                    })
-                    if len(matching_results) >= limit:
-                        break
-            
-            results = matching_results
+        # Search database if available, otherwise provide basic search
+        if self.db_available:
+            results = await self.database.search_interactions(query, limit)
         else:
-            # Simulate knowledge graph search for full mode
+            # Basic simulated search
             results = [
                 {
                     "id": f"node_{i}",
                     "type": node_type,
                     "content": f"Knowledge result {i} for '{query}'",
                     "relevance": 0.9 - (i * 0.1),
-                    "metadata": {"source": "knowledge_graph", "created": datetime.now().isoformat()}
+                    "metadata": {"source": "basic_search", "created": datetime.now().isoformat()}
                 }
-                for i in range(min(limit, 5))  # Simulate limited results
+                for i in range(min(limit, 3))  # Limited results in basic mode
             ]
         
-        return {
+        result = {
             "agent": "KnowledgeSearchAgent",
             "query": query,
             "results": results,
             "total_found": len(results),
-            "mode": "fallback" if self.fallback_mode else "full",
-            "storage": "in-memory" if self.fallback_mode else "persistent",
+            "storage": "sqlite" if self.db_available else "basic",
             "success": True,
             "timestamp": datetime.now().isoformat()
         }
+        
+        return result
 
     async def _debug_assist(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """Debug & Refactor implementation"""
         code = args.get("code", "")
         error_message = args.get("error_message", "")
         debug_type = args.get("debug_type", "fix")
-        
-        # Store debug session in memory if in fallback mode
-        if self.fallback_mode:
-            debug_id = f"debug_{len(self.memory_store)}"
-            self.memory_store[debug_id] = {
-                "type": "debug_session",
-                "debug_type": debug_type,
-                "error_message": error_message,
-                "code_length": len(code),
-                "timestamp": datetime.now().isoformat()
-            }
         
         result = {
             "agent": "DebugRefactorAgent",
@@ -464,11 +413,14 @@ class SentientBrainMCP:
                 "suggestions": self._generate_suggestions(code, debug_type),
                 "confidence": 0.85
             },
-            "mode": "fallback" if self.fallback_mode else "full",
-            "storage": "in-memory" if self.fallback_mode else "persistent",
+            "storage": "sqlite" if self.db_available else "basic",
             "success": True,
             "timestamp": datetime.now().isoformat()
         }
+        
+        # Store debug session in database if available
+        if self.db_available:
+            await self.database.store_interaction("debug_session", "DebugRefactorAgent", f"{debug_type}: {error_message}", result)
         
         return result
 
@@ -673,7 +625,7 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
             # Only now do we parse and validate configuration
             config = parse_smithery_config(request)
             server = SentientBrainMCP(config)
-            server.initialize()
+            await server.initialize()
             
             params = mcp_request.params or {}
             tool_name = params.get("name", "")
