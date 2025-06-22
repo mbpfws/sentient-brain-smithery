@@ -44,7 +44,7 @@ class Config(BaseSettings):
 class MCPRequest(BaseModel):
     """MCP Protocol Request"""
     jsonrpc: str = "2.0"
-    id: Optional[str] = None
+    id: Optional[Union[str, int]] = None  # Allow both string and int IDs
     method: str
     params: Optional[Dict[str, Any]] = None
 
@@ -71,7 +71,7 @@ class SentientBrainMCP:
             return
             
         # Initialize tools
-        self.tools = self._initialize_tools()
+        self.tools = self.get_tool_definitions()
         
         # Initialize other resources (agents, services, etc.)
         # This happens only when actually using the tools, not during scanning
@@ -393,15 +393,25 @@ async def root():
         "timestamp": datetime.now().isoformat()
     }
 
+@app.get("/health")
+async def health():
+    """Health check endpoint for Smithery"""
+    return {
+        "status": "healthy",
+        "name": "sentient-brain-mcp",
+        "version": "1.0.0",
+        "capabilities": ["tools", "resources", "prompts"],
+        "timestamp": datetime.now().isoformat()
+    }
+
 @app.get("/mcp")
 async def mcp_get(request: Request):
-    """Handle MCP GET requests - return server info and tools"""
-    global config, mcp_server
-    
-    # Initialize with Smithery config
-    # Return static definitions for discovery, do not initialize the full server.
+    """Handle MCP GET requests - return server info and tools for lazy loading"""
+    # Return static tool definitions without requiring authentication
+    # This allows Smithery to discover tools before user configuration
     return {
         "jsonrpc": "2.0",
+        "id": "discovery",  # Static ID for discovery
         "result": {
             "server": {
                 "name": "sentient-brain-multi-agent",
@@ -409,9 +419,9 @@ async def mcp_get(request: Request):
             },
             "tools": SentientBrainMCP.get_tool_definitions(),
             "capabilities": {
-                "tools": True,
-                "resources": True,
-                "prompts": True
+                "tools": {"listChanged": True},
+                "resources": {},
+                "prompts": {}
             }
         }
     }
@@ -424,7 +434,11 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
         server = SentientBrainMCP(config)
         
         method = mcp_request.method
-        request_id = mcp_request.id or "1"  # Ensure ID is always a string
+        # Ensure ID is always a string - handle 0, null, and other values
+        if mcp_request.id is not None:
+            request_id = str(mcp_request.id)
+        else:
+            request_id = "1"
         
         if method == "initialize":
             result = {
