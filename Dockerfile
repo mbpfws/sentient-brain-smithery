@@ -15,14 +15,18 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy requirements first for better caching
-COPY requirements-minimal.txt ./
+COPY requirements.txt ./
 
 # Install Python dependencies directly (no venv for simplicity)
 RUN pip install --upgrade pip && \
-    pip install -r requirements-minimal.txt
+    pip install -r requirements.txt
 
-# Copy application code
-COPY . .
+# Copy application code (exclude problematic files)
+COPY mcp_server.py ./
+COPY smithery.yaml ./
+COPY smithery.json ./
+COPY src/ ./src/
+COPY README.md ./
 
 # Create necessary directories with proper permissions
 RUN mkdir -p /app/logs /app/data /app/temp
