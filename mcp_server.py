@@ -60,12 +60,28 @@ class SentientBrainMCP:
     
     def __init__(self, config: Config):
         self.config = config
-        self.tools = self._initialize_tools()
+        self.tools = []  # Will be lazily initialized
         self.agents = {}
-        logger.info(f"Initialized Sentient Brain MCP with {len(self.tools)} tools")
+        self._is_initialized = False
+        logger.info(f"Created SentientBrainMCP instance (lazy initialization)")
 
-    def _initialize_tools(self) -> List[Dict[str, Any]]:
-        """Initialize available MCP tools"""
+    def initialize(self) -> None:
+        """Lazily initialize all resources and services"""
+        if self._is_initialized:
+            return
+            
+        # Initialize tools
+        self.tools = self._initialize_tools()
+        
+        # Initialize other resources (agents, services, etc.)
+        # This happens only when actually using the tools, not during scanning
+        
+        self._is_initialized = True
+        logger.info(f"Fully initialized SentientBrainMCP with {len(self.tools)} tools")
+    
+    @staticmethod
+    def get_tool_definitions() -> List[Dict[str, Any]]:
+        """Get tool definitions without initializing resources - used for Smithery scanning"""
         return [
             {
                 "name": "sentient-brain/orchestrate",
@@ -406,10 +422,24 @@ async def mcp_get(request: Request):
 async def mcp_post(request: Request, mcp_request: MCPRequest):
     """Handle MCP POST requests - execute tools"""
     global config, mcp_server
-    
+
+    # For "tools/list", return the static definitions immediately without full server init
+    if mcp_request.method == "tools/list":
+        return MCPResponse(
+            id=mcp_request.id,
+            result={"tools": SentientBrainMCP.get_tool_definitions()}
+        )
+
+    # For all other methods, ensure the full server is initialized
     if not mcp_server:
+        logger.info("First tool call request, creating SentientBrainMCP instance...")
         config = parse_smithery_config(request)
         mcp_server = SentientBrainMCP(config)
+    
+    # Only initialize fully when actually executing a tool, not during scanning
+    if mcp_request.method == "tools/call":
+        logger.info("Tool execution requested, ensuring full initialization...")
+        mcp_server.initialize()
     
     try:
         if mcp_request.method == "tools/call":
@@ -432,12 +462,6 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
                         }
                     ]
                 }
-            )
-        
-        elif mcp_request.method == "tools/list":
-            return MCPResponse(
-                id=mcp_request.id,
-                result={"tools": mcp_server.tools}
             )
         
         else:
