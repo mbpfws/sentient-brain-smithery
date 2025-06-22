@@ -405,15 +405,15 @@ async def mcp_get(request: Request):
     # Return static tool definitions without requiring authentication
     # This allows Smithery to discover tools before user configuration
     return {
-        "server": {
-            "name": "sentient-brain-multi-agent",
-            "version": "1.0.0"
-        },
-        "tools": SentientBrainMCP.get_tool_definitions(),
-        "capabilities": {
-            "tools": True,
-            "resources": True,
-            "prompts": True
+            "server": {
+                "name": "sentient-brain-multi-agent",
+                "version": "1.0.0"
+            },
+            "tools": SentientBrainMCP.get_tool_definitions(),
+            "capabilities": {
+                "tools": True,
+                "resources": True,
+                "prompts": True
         }
     }
 
@@ -432,7 +432,7 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
         if method in ["initialize", "tools/list", "resources/list", "prompts/list"]:
             if method == "initialize":
                 result = {
-                    "protocolVersion": "2025-06-18",
+                    "protocolVersion": "2025-03-26",
                     "capabilities": {
                         "tools": {"listChanged": True},
                         "resources": {},
@@ -502,7 +502,7 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
         
         logger.info(f"MCP {method} request processed successfully")
         return JSONResponse(content=response)
-        
+            
     except Exception as e:
         logger.error(f"MCP request error: {e}")
         return JSONResponse(
