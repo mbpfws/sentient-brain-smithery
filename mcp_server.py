@@ -58,9 +58,10 @@ class DebugAssistInput(BaseModel):
 class SQLiteDatabase:
     """Simple SQLite database service for persistent storage"""
     
-    def __init__(self, db_path: str = "./sentient_brain.db"):
+    def __init__(self, db_path: str = "/app/data/sentient_brain.db"):
         self.db_path = db_path
         self._initialized = False
+        logger.info(f"SQLiteDatabase configured with path: {self.db_path}")
     
     async def initialize(self) -> bool:
         """Initialize database schema"""
@@ -188,7 +189,7 @@ class SQLiteDatabase:
 class Config(BaseSettings):
     """Configuration loaded from environment or Smithery query params"""
     groq_api_key: Optional[str] = Field(default=None, alias="GROQ_API_KEY")
-    database_path: str = Field(default="./sentient_brain.db", alias="DATABASE_PATH")
+    database_path: str = Field(default="/app/data/sentient_brain.db", alias="DATABASE_PATH")
     groq_model: str = Field(default="llama-3.1-70b-versatile", alias="GROQ_MODEL")
     google_api_key: Optional[str] = Field(default=None, alias="GOOGLE_API_KEY")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
