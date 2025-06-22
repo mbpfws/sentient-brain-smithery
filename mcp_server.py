@@ -399,9 +399,7 @@ async def mcp_get(request: Request):
     global config, mcp_server
     
     # Initialize with Smithery config
-    config = parse_smithery_config(request)
-    mcp_server = SentientBrainMCP(config)
-    
+    # Return static definitions for discovery, do not initialize the full server.
     return {
         "jsonrpc": "2.0",
         "result": {
@@ -409,7 +407,7 @@ async def mcp_get(request: Request):
                 "name": "sentient-brain-multi-agent",
                 "version": "1.0.0"
             },
-            "tools": mcp_server.tools,
+            "tools": SentientBrainMCP.get_tool_definitions(),
             "capabilities": {
                 "tools": True,
                 "resources": True,
