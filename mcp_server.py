@@ -82,72 +82,32 @@ class SentientBrainMCP:
     
     @staticmethod
     def get_tool_definitions() -> List[Dict[str, Any]]:
-        """Get tool definitions without initializing resources - used for Smithery scanning"""
+        """Returns a list of tool definitions using static Pydantic models."""
         return [
             {
                 "name": "sentient-brain/orchestrate",
                 "description": "Ultra Orchestrator - Master agent for coordinating multi-agent workflows",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "query": {"type": "string", "description": "User query or task description"},
-                        "context": {"type": "object", "description": "Additional context"},
-                        "priority": {"type": "string", "enum": ["low", "medium", "high"], "default": "medium"}
-                    },
-                    "required": ["query"]
-                }
+                "inputSchema": OrchestrateInput.model_json_schema()
             },
             {
                 "name": "sentient-brain/architect",
                 "description": "Architect Agent - Design and plan software projects",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "project_type": {"type": "string", "description": "Type of project to architect"},
-                        "requirements": {"type": "string", "description": "Project requirements"},
-                        "tech_stack": {"type": "array", "items": {"type": "string"}}
-                    },
-                    "required": ["project_type", "requirements"]
-                }
+                "inputSchema": ArchitectInput.model_json_schema()
             },
             {
                 "name": "sentient-brain/analyze-code",
                 "description": "Code Analysis - Deep code understanding and indexing",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "code": {"type": "string", "description": "Code to analyze"},
-                        "language": {"type": "string", "description": "Programming language"},
-                        "analysis_type": {"type": "string", "enum": ["structure", "quality", "dependencies"]}
-                    },
-                    "required": ["code"]
-                }
+                "inputSchema": AnalyzeCodeInput.model_json_schema()
             },
             {
                 "name": "sentient-brain/search-knowledge",
                 "description": "Knowledge Graph Search - Semantic search across project knowledge",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "query": {"type": "string", "description": "Search query"},
-                        "node_type": {"type": "string", "enum": ["code_chunk", "task", "document", "concept"]},
-                        "limit": {"type": "integer", "default": 10}
-                    },
-                    "required": ["query"]
-                }
+                "inputSchema": SearchKnowledgeInput.model_json_schema()
             },
             {
                 "name": "sentient-brain/debug-assist",
                 "description": "Debug & Refactor Agent - Code debugging and improvement",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "code": {"type": "string", "description": "Code with issues"},
-                        "error_message": {"type": "string", "description": "Error message if available"},
-                        "debug_type": {"type": "string", "enum": ["fix", "optimize", "refactor"]}
-                    },
-                    "required": ["code"]
-                }
+                "inputSchema": DebugAssistInput.model_json_schema()
             }
         ]
 
@@ -416,19 +376,15 @@ async def mcp_get(request: Request):
     # Return static tool definitions without requiring authentication
     # This allows Smithery to discover tools before user configuration
     return {
-        "jsonrpc": "2.0",
-        "id": "discovery",  # Static ID for discovery
-        "result": {
-            "server": {
-                "name": "sentient-brain-multi-agent",
-                "version": "1.0.0"
-            },
-            "tools": SentientBrainMCP.get_tool_definitions(),
-            "capabilities": {
-                "tools": {"listChanged": True},
-                "resources": {},
-                "prompts": {}
-            }
+        "server": {
+            "name": "sentient-brain-multi-agent",
+            "version": "1.0.0"
+        },
+        "tools": SentientBrainMCP.get_tool_definitions(),
+        "capabilities": {
+            "tools": True,
+            "resources": True,
+            "prompts": True
         }
     }
 
