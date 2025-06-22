@@ -8,6 +8,8 @@ description: "A multi-agent framework for advanced code generation, analysis, an
 build:
   # Use a Dockerfile for building the application
   type: dockerfile
+  dockerfile: "Dockerfile"
+  dockerBuildPath: "."
 
 # Environment variables required for the application
 # 'secret' type will render as a password input in the Smithery UI
@@ -54,3 +56,48 @@ healthCheck:
   path: "/health"
   # Port to use for the health check
   port: 8000
+
+start:
+  command: ["python", "mcp_server.py"]
+  port: 8000
+
+runtime: "container"
+
+startCommand:
+  type: "http"
+  configSchema:
+    type: "object"
+    properties:
+      GROQ_API_KEY:
+        type: "string"
+        description: "Groq API key for high-performance LLM inference"
+      SURREAL_URL:
+        type: "string"
+        description: "SurrealDB connection URL"
+        default: "ws://localhost:8000/rpc"
+      SURREAL_USER:
+        type: "string"
+        description: "SurrealDB username"
+        default: "root"
+      SURREAL_PASS:
+        type: "string"
+        description: "SurrealDB password"
+        default: "root"
+      GOOGLE_API_KEY:
+        type: "string"
+        description: "Google GenAI API key (optional)"
+      GROQ_MODEL:
+        type: "string"
+        description: "Groq model to use"
+        default: "llama-3.1-70b-versatile"
+      LOG_LEVEL:
+        type: "string"
+        description: "Logging level"
+        default: "INFO"
+    required: ["GROQ_API_KEY"]
+  exampleConfig:
+    GROQ_API_KEY: "gsk_example123"
+    SURREAL_URL: "ws://localhost:8000/rpc"
+    SURREAL_USER: "root"
+    SURREAL_PASS: "root"
+    GROQ_MODEL: "llama-3.1-70b-versatile"
