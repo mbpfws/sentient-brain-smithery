@@ -1,14 +1,14 @@
 {
   "id": "sentient-brain/multi-agent-system",
   "name": "Sentient Brain Multi-Agent System",
-  "description": "Advanced AI Code Developer system leveraging multi-agent architecture with SurrealDB unified data layer. Provides intelligent code development assistance from concept to deployment with Ultra Orchestrator, Architect Agent, Knowledge Memory, Debug/Refactor capabilities, and Document Management.",
+  "description": "Advanced AI Code Developer system leveraging multi-agent architecture with automatic SQLite database (zero configuration required). Provides intelligent code development assistance from concept to deployment with Ultra Orchestrator, Architect Agent, Knowledge Memory, Debug/Refactor capabilities, and Document Management.",
   "version": "1.0.0",
   "author": "Sentient Brain Team",
   "license": "MIT",
   "tags": [
     "multi-agent",
     "ai-code-developer", 
-    "surrealdb",
+    "sqlite",
     "groq",
     "langraph",
     "orchestrator",
@@ -40,24 +40,10 @@
         "userInput": true
       },
       {
-        "name": "SURREAL_URL", 
-        "description": "SurrealDB connection URL (use default for testing)",
+        "name": "LOG_LEVEL",
+        "description": "Application logging level (DEBUG, INFO, WARNING, ERROR)",
         "required": false,
-        "default": "ws://localhost:8000/rpc"
-      },
-      {
-        "name": "SURREAL_USER",
-        "description": "SurrealDB username (use default for testing)",
-        "required": false,
-        "default": "root",
-        "type": "secret"
-      },
-      {
-        "name": "SURREAL_PASS",
-        "description": "SurrealDB password (use default for testing)", 
-        "required": false,
-        "default": "root",
-        "type": "secret"
+        "default": "INFO"
       }
     ],
     "ports": [
@@ -75,8 +61,9 @@
     "Architecture design and recommendations",
     "Debug assistance and refactoring",
     "Documentation generation and management",
-    "Knowledge graph-based semantic search",
+    "SQLite-based knowledge storage and search",
     "Multi-agent coordination and collaboration",
+    "Automatic database initialization (zero configuration)",
     "Failure prevention and recovery mechanisms"
   ],
   "examples": [

@@ -1,5 +1,5 @@
 # Smithery.ai Deployment Configuration for Sentient Brain MCP Server
-# Simplified and optimized for reliable deployment with fallback mode
+# Simplified and optimized for reliable deployment with automatic SQLite database
 
 name: "Sentient Brain MCP"
 description: "Multi-agent AI Code Developer system with automatic SQLite database (zero configuration required)"
@@ -26,12 +26,10 @@ env:
     description: "Your Groq API key for LLM inference (get from console.groq.com)"
     type: secret
     required: true
-
   - name: GOOGLE_API_KEY
     description: "Your Google GenAI API key for enhanced capabilities (get from makersuite.google.com)"
     type: secret
     required: false
-
   - name: LOG_LEVEL
     description: "Application logging level"
     default: "INFO"
@@ -51,17 +49,33 @@ healthCheck:
   timeout: 30
   interval: 10
 
-# Configuration schema for client setup
-configSchema:
-  type: "object"
-  properties:
-    GROQ_API_KEY:
-      type: "string"
-      description: "Groq API key for LLM inference"
-      required: true
-      sensitive: true
-    
-    GOOGLE_API_KEY:
-      type: "string"
-      description: "Google GenAI API key (optional)"
-      sensitive: true
+# Metadata
+metadata:
+  author: "Sentient Brain Team"
+  license: "MIT"
+  repository: "https://github.com/sentient-brain/smithery-deployment"
+  documentation: "README.md"
+  
+# Features and capabilities
+features:
+  - "Multi-agent AI coordination"
+  - "Automatic SQLite database"
+  - "Zero configuration setup"
+  - "Code analysis and planning"
+  - "Debug assistance"
+  - "Knowledge search"
+  - "Architecture design"
+  - "Workflow orchestration"
+
+# Resource requirements
+resources:
+  memory: "512Mi"
+  cpu: "500m"
+
+# Deployment tags
+tags:
+  - "multi-agent"
+  - "ai-code-developer"
+  - "sqlite"
+  - "groq"
+  - "zero-config" 
