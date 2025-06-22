@@ -526,10 +526,15 @@ async def mcp_delete(request: Request):
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
+    logger.info(f"Starting Sentient Brain MCP Server on port {port}")
+    logger.info(f"Health check available at http://0.0.0.0:{port}/health")
+    logger.info(f"MCP endpoint available at http://0.0.0.0:{port}/mcp")
+    
     uvicorn.run(
         "mcp_server:app",
         host="0.0.0.0",
         port=port,
         reload=False,
-        log_level="info"
+        log_level="info",
+        access_log=True
     )

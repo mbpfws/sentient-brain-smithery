@@ -60,12 +60,15 @@ env:
 start:
   command: ["python", "mcp_server.py"]
   port: 8000
+  timeout: 60
 
 # Health monitoring
 healthCheck:
   type: http
   path: "/health"
   port: 8000
+  timeout: 30
+  interval: 10
 
 # Configuration schema for client setup
 configSchema:

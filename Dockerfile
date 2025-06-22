@@ -56,7 +56,7 @@ USER sentient
 
 # Health check for Smithery monitoring
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-    CMD curl -f http://localhost:${PORT}/mcp || exit 1
+    CMD curl -f http://localhost:${PORT}/health || exit 1
 
 # Expose port (Smithery will map this)
 EXPOSE ${PORT}
