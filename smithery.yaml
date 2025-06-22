@@ -1,8 +1,8 @@
 # Smithery.ai Deployment Configuration for Sentient Brain MCP Server
-# Simplified and optimized for reliable deployment
+# Simplified and optimized for reliable deployment with fallback mode
 
 name: "Sentient Brain MCP"
-description: "Multi-agent AI Code Developer system with SurrealDB unified data layer"
+description: "Multi-agent AI Code Developer system with intelligent fallback mode (works without database)"
 version: "1.0.0"
 
 # Container deployment configuration
@@ -32,33 +32,6 @@ env:
     type: secret
     required: false
 
-  - name: SURREAL_URL
-    description: "SurrealDB WebSocket URL (use default for testing)"
-    default: "ws://localhost:8000/rpc"
-    required: false
-
-  - name: SURREAL_USER
-    description: "SurrealDB username (use default for testing)"
-    default: "root"
-    type: secret
-    required: false
-
-  - name: SURREAL_PASS
-    description: "SurrealDB password (use default for testing)"
-    default: "root"
-    type: secret
-    required: false
-
-  - name: SURREAL_NAMESPACE
-    description: "SurrealDB namespace"
-    default: "sentient_brain"
-    required: false
-
-  - name: SURREAL_DATABASE
-    description: "SurrealDB database name"
-    default: "multi_agent"
-    required: false
-
   - name: LOG_LEVEL
     description: "Application logging level"
     default: "INFO"
@@ -86,23 +59,6 @@ configSchema:
       type: "string"
       description: "Groq API key for LLM inference"
       required: true
-      sensitive: true
-    
-    SURREAL_URL:
-      type: "string"
-      description: "SurrealDB connection URL"
-      default: "ws://localhost:8000/rpc"
-    
-    SURREAL_USER:
-      type: "string"
-      description: "SurrealDB username"
-      default: "root"
-      sensitive: true
-    
-    SURREAL_PASS:
-      type: "string"
-      description: "SurrealDB password"
-      default: "root"
       sensitive: true
     
     GOOGLE_API_KEY:
