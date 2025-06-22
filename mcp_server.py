@@ -65,7 +65,14 @@ class SQLiteDatabase:
     async def initialize(self) -> bool:
         """Initialize database schema"""
         try:
-            async with aiosqlite.connect(self.db_path) as db:
+            # Ensure directory exists for database file
+            import os
+            db_dir = os.path.dirname(self.db_path) or "."
+            if not os.path.exists(db_dir):
+                os.makedirs(db_dir, exist_ok=True)
+            
+            # Set a shorter timeout for Docker environments
+            async with aiosqlite.connect(self.db_path, timeout=5.0) as db:
                 # Create tables for storing interactions and knowledge
                 await db.execute("""
                     CREATE TABLE IF NOT EXISTS interactions (
@@ -105,7 +112,7 @@ class SQLiteDatabase:
             return True
             
         except Exception as e:
-            logger.error(f"Failed to initialize SQLite database: {e}")
+            logger.warning(f"SQLite database initialization failed: {e} - continuing without persistent storage")
             return False
     
     async def store_interaction(self, interaction_type: str, agent: str, query: str, response: Dict[str, Any]) -> Optional[int]:
@@ -226,16 +233,28 @@ class SentientBrainMCP:
         # Initialize tools - always available
         self.tools = self.get_tool_definitions()
         
-        # Initialize SQLite database
-        self.db_available = await self.database.initialize()
+        # Initialize SQLite database with timeout protection
+        try:
+            # Use asyncio.wait_for to prevent hanging during tool scanning
+            import asyncio
+            self.db_available = await asyncio.wait_for(
+                self.database.initialize(), 
+                timeout=3.0  # Short timeout for Docker/Smithery environments
+            )
+        except asyncio.TimeoutError:
+            logger.warning("Database initialization timed out - using basic mode")
+            self.db_available = False
+        except Exception as e:
+            logger.warning(f"Database initialization failed: {e} - using basic mode")
+            self.db_available = False
         
         if self.db_available:
             logger.info("SQLite database initialized successfully")
         else:
-            logger.warning("SQLite database initialization failed - using basic mode")
+            logger.info("Running in basic mode without persistent storage")
             
         self._is_initialized = True
-        logger.info(f"Fully initialized SentientBrainMCP with {len(self.tools)} tools (database: {'available' if self.db_available else 'unavailable'})")
+        logger.info(f"Initialized SentientBrainMCP with {len(self.tools)} tools (database: {'available' if self.db_available else 'unavailable'})")
     
     @staticmethod
     def get_tool_definitions() -> List[Dict[str, Any]]:
@@ -546,31 +565,52 @@ async def root():
 @app.get("/health")
 async def health():
     """Health check endpoint for Smithery"""
-    return {
-        "status": "healthy",
-        "name": "sentient-brain-mcp",
-        "version": "1.0.0",
-        "capabilities": ["tools", "resources", "prompts"],
-        "timestamp": datetime.now().isoformat()
-    }
+    try:
+        return {
+            "status": "healthy",
+            "name": "sentient-brain-mcp",
+            "version": "1.0.0",
+            "capabilities": ["tools", "resources", "prompts"],
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
 
 @app.get("/mcp")
 async def mcp_get(request: Request):
     """Handle MCP GET requests - return server info and tools for lazy loading"""
-    # Return static tool definitions without requiring authentication
-    # This allows Smithery to discover tools before user configuration
-    return {
-            "server": {
-                "name": "sentient-brain-multi-agent",
-                "version": "1.0.0"
-            },
-            "tools": SentientBrainMCP.get_tool_definitions(),
-            "capabilities": {
-                "tools": True,
-                "resources": True,
-                "prompts": True
+    try:
+        # Return static tool definitions without requiring authentication
+        # This allows Smithery to discover tools before user configuration
+        return {
+                "server": {
+                    "name": "sentient-brain-multi-agent",
+                    "version": "1.0.0"
+                },
+                "tools": SentientBrainMCP.get_tool_definitions(),
+                "capabilities": {
+                    "tools": True,
+                    "resources": True,
+                    "prompts": True
+            }
         }
-    }
+    except Exception as e:
+        logger.error(f"MCP GET request failed: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": str(e),
+                "server": {
+                    "name": "sentient-brain-multi-agent",
+                    "version": "1.0.0"
+                }
+            }
+        )
 
 @app.post("/mcp")
 async def mcp_post(request: Request, mcp_request: MCPRequest):
@@ -610,7 +650,7 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
                 result = {}
                 
             elif method == "tools/list":
-                # Use static tool definitions for lazy loading - no config needed
+                # Use static tool definitions for lazy loading - no config or database needed
                 tools = SentientBrainMCP.get_tool_definitions()
                 result = {"tools": tools}
                 
