@@ -1,4 +1,8 @@
-# Sentient Brain Multi-Agent System for Smithery.ai
+# 🧠 Sentient Brain Multi-Agent System for Smithery.ai
+
+**Advanced AI Code Developer with Multi-Agent Architecture** 🚀
+
+*Last deployment: 2025-01-27*
 
 Advanced AI Code Developer system leveraging multi-agent architecture with SurrealDB unified data layer. Designed for seamless deployment on [Smithery.ai](https://smithery.ai) platform.
 
