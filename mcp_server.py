@@ -416,19 +416,15 @@ async def mcp_get(request: Request):
     # Return static tool definitions without requiring authentication
     # This allows Smithery to discover tools before user configuration
     return {
-        "jsonrpc": "2.0",
-        "id": "discovery",  # Static ID for discovery
-        "result": {
-            "server": {
-                "name": "sentient-brain-multi-agent",
-                "version": "1.0.0"
-            },
-            "tools": SentientBrainMCP.get_tool_definitions(),
-            "capabilities": {
-                "tools": {"listChanged": True},
-                "resources": {},
-                "prompts": {}
-            }
+        "server": {
+            "name": "sentient-brain-multi-agent",
+            "version": "1.0.0"
+        },
+        "tools": SentientBrainMCP.get_tool_definitions(),
+        "capabilities": {
+            "tools": True,
+            "resources": True,
+            "prompts": True
         }
     }
 
