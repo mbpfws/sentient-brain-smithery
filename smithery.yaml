@@ -1,54 +1,56 @@
-runtime: "container"
+# Smithery.ai Deployment Configuration for Sentient Brain MCP Server
+
+# Metadata for the Smithery UI
+name: "Sentient Brain MCP"
+description: "A multi-agent framework for advanced code generation, analysis, and orchestration."
+
+# Defines the container build process
 build:
-  dockerfile: "Dockerfile"
-  dockerBuildPath: "."
-startCommand:
-  type: "http"
-  configSchema:
-    type: object
-    required:
-      - GROQ_API_KEY
-      - SURREAL_URL
-      - SURREAL_USER
-      - SURREAL_PASS
-    properties:
-      GROQ_API_KEY:
-        type: string
-        description: "Groq API key for LLM inference"
-      SURREAL_URL:
-        type: string
-        description: "SurrealDB connection URL"
-        default: "ws://localhost:8000/rpc"
-      SURREAL_USER:
-        type: string
-        description: "SurrealDB username"
-        default: "root"
-      SURREAL_PASS:
-        type: string
-        description: "SurrealDB password"
-        default: "root"
-      SURREAL_NAMESPACE:
-        type: string
-        description: "SurrealDB namespace"
-        default: "sentient_brain"
-      SURREAL_DATABASE:
-        type: string
-        description: "SurrealDB database name"
-        default: "multi_agent"
-      GROQ_MODEL:
-        type: string
-        description: "Groq model to use"
-        default: "llama-3.1-70b-versatile"
-      GOOGLE_API_KEY:
-        type: string
-        description: "Google GenAI API key (optional)"
-      LOG_LEVEL:
-        type: string
-        description: "Logging level"
-        default: "INFO"
-        enum: ["DEBUG", "INFO", "WARNING", "ERROR"]
-  exampleConfig:
-    GROQ_API_KEY: "gsk_example123"
-    SURREAL_URL: "ws://localhost:8000/rpc"
-    SURREAL_USER: "root"
-    SURREAL_PASS: "root"
+  # Use a Dockerfile for building the application
+  type: dockerfile
+
+# Environment variables required for the application
+# 'secret' type will render as a password input in the Smithery UI
+env:
+  - name: GROQ_API_KEY
+    description: "API key for the Groq language model service."
+    type: secret
+
+  - name: GOOGLE_API_KEY
+    description: "API key for Google AI services (e.g., Gemini)."
+    type: secret
+
+  - name: SURREAL_URL
+    description: "WebSocket URL for the SurrealDB instance (e.g., wss://your-db.fly.dev/rpc)."
+    default: "ws://localhost:8000/rpc"
+
+  - name: SURREAL_USER
+    description: "Username for SurrealDB authentication."
+    type: secret
+    default: "root"
+
+  - name: SURREAL_PASS
+    description: "Password for SurrealDB authentication."
+    type: secret
+    default: "root"
+
+  - name: SURREAL_NAMESPACE
+    description: "The namespace to use within SurrealDB."
+    default: "sentient_brain"
+
+  - name: SURREAL_DATABASE
+    description: "The database to use within the namespace."
+    default: "multi_agent"
+
+  - name: LOG_LEVEL
+    description: "Logging level for the application (e.g., INFO, DEBUG)."
+    default: "INFO"
+
+# Health check to ensure the service is running correctly
+healthCheck:
+  # Use an HTTP GET request for the health check
+  type: http
+  # The endpoint to check
+  path: "/health"
+  # Port to use for the health check
+  port: 8000

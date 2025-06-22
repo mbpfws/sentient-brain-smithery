@@ -6,7 +6,7 @@ Optimized for HTTP streaming protocol with configuration via query parameters
 
 import os
 import asyncio
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Union
 from urllib.parse import parse_qs, urlparse
 import json
 import logging
