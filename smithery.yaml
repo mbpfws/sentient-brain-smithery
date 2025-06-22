@@ -20,41 +20,49 @@ platforms:
   - vscode-insiders
   - raycast
 
-# Required environment variables
+# Required environment variables - Users will input these when connecting
 env:
   - name: GROQ_API_KEY
-    description: "API key for Groq language model service"
+    description: "Your Groq API key for LLM inference (get from console.groq.com)"
     type: secret
+    required: true
+
+  - name: GOOGLE_API_KEY
+    description: "Your Google GenAI API key for enhanced capabilities (get from makersuite.google.com)"
+    type: secret
+    required: false
 
   - name: SURREAL_URL
-    description: "SurrealDB WebSocket URL"
+    description: "SurrealDB WebSocket URL (use default for testing)"
     default: "ws://localhost:8000/rpc"
+    required: false
 
   - name: SURREAL_USER
-    description: "SurrealDB username"
+    description: "SurrealDB username (use default for testing)"
     default: "root"
     type: secret
+    required: false
 
   - name: SURREAL_PASS
-    description: "SurrealDB password"
+    description: "SurrealDB password (use default for testing)"
     default: "root"
     type: secret
+    required: false
 
   - name: SURREAL_NAMESPACE
     description: "SurrealDB namespace"
     default: "sentient_brain"
+    required: false
 
   - name: SURREAL_DATABASE
     description: "SurrealDB database name"
     default: "multi_agent"
-
-  - name: GOOGLE_API_KEY
-    description: "Google GenAI API key (optional)"
-    type: secret
+    required: false
 
   - name: LOG_LEVEL
     description: "Application logging level"
     default: "INFO"
+    required: false
 
 # Service configuration
 start:

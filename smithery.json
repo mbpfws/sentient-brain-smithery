@@ -27,33 +27,36 @@
     "requirements": [
       {
         "name": "GROQ_API_KEY",
-        "description": "Groq API key for high-performance LLM inference",
+        "description": "Your Groq API key for LLM inference. Get yours at: https://console.groq.com/keys",
         "required": true,
-        "type": "secret"
+        "type": "secret",
+        "userInput": true
+      },
+      {
+        "name": "GOOGLE_API_KEY",
+        "description": "Your Google GenAI API key for enhanced capabilities. Get yours at: https://makersuite.google.com/app/apikey",
+        "required": false,
+        "type": "secret",
+        "userInput": true
       },
       {
         "name": "SURREAL_URL", 
-        "description": "SurrealDB connection URL (ws://localhost:8000/rpc for local)",
-        "required": true,
+        "description": "SurrealDB connection URL (use default for testing)",
+        "required": false,
         "default": "ws://localhost:8000/rpc"
       },
       {
         "name": "SURREAL_USER",
-        "description": "SurrealDB username",
-        "required": true,
-        "default": "root"
-      },
-      {
-        "name": "SURREAL_PASS",
-        "description": "SurrealDB password", 
-        "required": true,
+        "description": "SurrealDB username (use default for testing)",
+        "required": false,
         "default": "root",
         "type": "secret"
       },
       {
-        "name": "GOOGLE_API_KEY",
-        "description": "Google GenAI API key for enhanced capabilities (optional)",
+        "name": "SURREAL_PASS",
+        "description": "SurrealDB password (use default for testing)", 
         "required": false,
+        "default": "root",
         "type": "secret"
       }
     ],

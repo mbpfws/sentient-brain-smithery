@@ -451,11 +451,8 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
                 
             elif method == "ping":
                 # Handle ping requests for server health/connectivity
-                result = {
-                    "status": "pong",
-                    "timestamp": datetime.now().isoformat(),
-                    "server": "sentient-brain-mcp"
-                }
+                # Return empty result as per MCP spec
+                result = {}
                 
             elif method == "tools/list":
                 # Use static tool definitions for lazy loading - no config needed
@@ -481,7 +478,7 @@ async def mcp_post(request: Request, mcp_request: MCPRequest):
             
             # Validate configuration for actual tool execution
             if tool_name.startswith("sentient-brain/") and not config.groq_api_key:
-                raise ValueError("GROQ_API_KEY is required for tool execution")
+                raise ValueError("GROQ_API_KEY is required for tool execution. Please get your API key from https://console.groq.com/keys and configure it in Smithery.")
             
             tool_result = await server.handle_tool_call(tool_name, arguments)
             result = {
