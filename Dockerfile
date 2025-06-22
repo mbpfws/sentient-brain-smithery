@@ -15,11 +15,11 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy requirements first for better caching
-COPY requirements.txt ./
+COPY requirements-minimal.txt ./
 
 # Install Python dependencies directly (no venv for simplicity)
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+    pip install -r requirements-minimal.txt
 
 # Copy application code
 COPY . .
